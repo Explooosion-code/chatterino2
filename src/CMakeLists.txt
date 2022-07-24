@@ -659,7 +659,7 @@ if (GIT_MODIFIED)
 endif ()
 if (USE_SYSTEM_QTKEYCHAIN)
     target_compile_definitions(${LIBRARY_PROJECT} PUBLIC
-        CMAKE_BUILD
+        SYSTEM_QTKEYCHAIN
         )
 endif ()
 if (WIN32)
