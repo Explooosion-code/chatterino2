@@ -49,6 +49,7 @@
 - Dev: Use Game Name returned by Get Streams instead of querying it from the Get Games API. (#3662)
 - Dev: Batch checking live status for all channels after startup. (#3757, #3762, #3767)
 - Dev: Move most command context into the command controller. (#3824)
+- Dev: Use QtKeychain upstream repository instead of our own fork. We needed some quirky changes to the repository to support our qmake build, however this is no longer the case. (#3877)
 
 ## 2.3.5
 
