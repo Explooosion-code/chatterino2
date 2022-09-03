@@ -75,6 +75,14 @@ public:
     static std::unordered_map<QString, QString> parseBadgeInfoTag(
         const QVariantMap &tags);
 
+    static void appendTwitchEmoteOccurences(
+        const QString &emote, std::vector<TwitchEmoteOccurence> &vec,
+        const std::vector<int> &correctPositions,
+        const QString &originalMessage);
+
+    static std::vector<TwitchEmoteOccurence> parseTwitchEmotes(
+        const QVariantMap &tags, const QString &originalMessage);
+
 private:
     void parseUsernameColor() override;
     void parseUsername() override;
@@ -85,9 +93,6 @@ private:
     void runIgnoreReplaces(std::vector<TwitchEmoteOccurence> &twitchEmotes);
 
     boost::optional<EmotePtr> getTwitchBadge(const Badge &badge);
-    void appendTwitchEmote(const QString &emote,
-                           std::vector<TwitchEmoteOccurence> &vec,
-                           const std::vector<int> &correctPositions) const;
     Outcome tryAppendEmote(const EmoteName &name) override;
 
     void addWords(const QStringList &words,
