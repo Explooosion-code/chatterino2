@@ -106,6 +106,74 @@ namespace {
         return usernameText;
     }
 
+    void appendTwitchEmoteOccurences(const QString &emote,
+                                     std::vector<TwitchEmoteOccurence> &vec,
+                                     const std::vector<int> &correctPositions,
+                                     const QString &originalMessage)
+    {
+        auto *app = getIApp();
+        if (!emote.contains(':'))
+        {
+            return;
+        }
+
+        auto parameters = emote.split(':');
+
+        if (parameters.length() < 2)
+        {
+            return;
+        }
+
+        auto id = EmoteId{parameters.at(0)};
+
+        auto occurences = parameters.at(1).split(',');
+
+        for (const QString &occurence : occurences)
+        {
+            auto coords = occurence.split('-');
+
+            if (coords.length() < 2)
+            {
+                return;
+            }
+
+            auto from = coords.at(0).toUInt();
+            auto to = coords.at(1).toUInt();
+            auto maxPositions = correctPositions.size();
+            if (from > to || to >= maxPositions)
+            {
+                // Emote coords are out of range
+                qCDebug(chatterinoTwitch)
+                    << "Emote coords" << from << "-" << to
+                    << "are out of range (" << maxPositions << ")";
+                return;
+            }
+
+            auto start = correctPositions[from];
+            auto end = correctPositions[to];
+            if (start > end || start < 0 || end > originalMessage.length())
+            {
+                // Emote coords are out of range from the modified character positions
+                qCDebug(chatterinoTwitch) << "Emote coords" << from << "-" << to
+                                          << "are out of range after offsets ("
+                                          << originalMessage.length() << ")";
+                return;
+            }
+
+            auto name = EmoteName{originalMessage.mid(start, end - start + 1)};
+            TwitchEmoteOccurence emoteOccurence{
+                start, end,
+                app->getEmotes()->getTwitchEmotes()->getOrCreateEmote(id, name),
+                name};
+            if (emoteOccurence.ptr == nullptr)
+            {
+                qCDebug(chatterinoTwitch)
+                    << "nullptr" << emoteOccurence.name.string;
+            }
+            vec.push_back(std::move(emoteOccurence));
+        }
+    }
+
 }  // namespace
 
 TwitchMessageBuilder::TwitchMessageBuilder(
@@ -1031,73 +1099,6 @@ std::unordered_map<QString, QString> TwitchMessageBuilder::parseBadgeInfoTag(
     return infoMap;
 }
 
-void TwitchMessageBuilder::appendTwitchEmoteOccurences(
-    const QString &emote, std::vector<TwitchEmoteOccurence> &vec,
-    const std::vector<int> &correctPositions, const QString &originalMessage)
-{
-    auto *app = getIApp();
-    if (!emote.contains(':'))
-    {
-        return;
-    }
-
-    auto parameters = emote.split(':');
-
-    if (parameters.length() < 2)
-    {
-        return;
-    }
-
-    auto id = EmoteId{parameters.at(0)};
-
-    auto occurences = parameters.at(1).split(',');
-
-    for (const QString &occurence : occurences)
-    {
-        auto coords = occurence.split('-');
-
-        if (coords.length() < 2)
-        {
-            return;
-        }
-
-        auto from = coords.at(0).toUInt();
-        auto to = coords.at(1).toUInt();
-        auto maxPositions = correctPositions.size();
-        if (from > to || to >= maxPositions)
-        {
-            // Emote coords are out of range
-            qCDebug(chatterinoTwitch)
-                << "Emote coords" << from << "-" << to << "are out of range ("
-                << maxPositions << ")";
-            return;
-        }
-
-        auto start = correctPositions[from];
-        auto end = correctPositions[to];
-        if (start > end || start < 0 || end > originalMessage.length())
-        {
-            // Emote coords are out of range from the modified character positions
-            qCDebug(chatterinoTwitch) << "Emote coords" << from << "-" << to
-                                      << "are out of range after offsets ("
-                                      << originalMessage.length() << ")";
-            return;
-        }
-
-        auto name = EmoteName{originalMessage.mid(start, end - start + 1)};
-        TwitchEmoteOccurence emoteOccurence{
-            start, end,
-            app->getEmotes()->getTwitchEmotes()->getOrCreateEmote(id, name),
-            name};
-        if (emoteOccurence.ptr == nullptr)
-        {
-            qCDebug(chatterinoTwitch)
-                << "nullptr" << emoteOccurence.name.string;
-        }
-        vec.push_back(std::move(emoteOccurence));
-    }
-}
-
 std::vector<TwitchEmoteOccurence> TwitchMessageBuilder::parseTwitchEmotes(
     const QVariantMap &tags, const QString &originalMessage)
 {
@@ -1122,8 +1123,8 @@ std::vector<TwitchEmoteOccurence> TwitchMessageBuilder::parseTwitchEmotes(
     }
     for (const QString &emote : emoteString)
     {
-        TwitchMessageBuilder::appendTwitchEmoteOccurences(
-            emote, twitchEmotes, correctPositions, originalMessage);
+        appendTwitchEmoteOccurences(emote, twitchEmotes, correctPositions,
+                                    originalMessage);
     }
 
     return twitchEmotes;
