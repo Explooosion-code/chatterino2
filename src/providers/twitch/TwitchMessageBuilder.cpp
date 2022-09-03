@@ -106,10 +106,10 @@ namespace {
         return usernameText;
     }
 
-    void appendTwitchEmoteOccurences(const QString &emote,
-                                     std::vector<TwitchEmoteOccurence> &vec,
-                                     const std::vector<int> &correctPositions,
-                                     const QString &originalMessage)
+    void appendTwitchEmoteOccurrences(const QString &emote,
+                                      std::vector<TwitchEmoteOccurrence> &vec,
+                                      const std::vector<int> &correctPositions,
+                                      const QString &originalMessage)
     {
         auto *app = getIApp();
         if (!emote.contains(':'))
@@ -161,7 +161,7 @@ namespace {
             }
 
             auto name = EmoteName{originalMessage.mid(start, end - start + 1)};
-            TwitchEmoteOccurence emoteOccurence{
+            TwitchEmoteOccurrence emoteOccurence{
                 start, end,
                 app->getEmotes()->getTwitchEmotes()->getOrCreateEmote(id, name),
                 name};
@@ -414,8 +414,8 @@ MessagePtr TwitchMessageBuilder::build()
 
 bool doesWordContainATwitchEmote(
     int cursor, const QString &word,
-    const std::vector<TwitchEmoteOccurence> &twitchEmotes,
-    std::vector<TwitchEmoteOccurence>::const_iterator &currentTwitchEmoteIt)
+    const std::vector<TwitchEmoteOccurrence> &twitchEmotes,
+    std::vector<TwitchEmoteOccurrence>::const_iterator &currentTwitchEmoteIt)
 {
     if (currentTwitchEmoteIt == twitchEmotes.end())
     {
@@ -439,7 +439,7 @@ bool doesWordContainATwitchEmote(
 
 void TwitchMessageBuilder::addWords(
     const QStringList &words,
-    const std::vector<TwitchEmoteOccurence> &twitchEmotes)
+    const std::vector<TwitchEmoteOccurrence> &twitchEmotes)
 {
     // cursor currently indicates what character index we're currently operating in the full list of words
     int cursor = 0;
@@ -797,7 +797,7 @@ void TwitchMessageBuilder::appendUsername()
 }
 
 void TwitchMessageBuilder::runIgnoreReplaces(
-    std::vector<TwitchEmoteOccurence> &twitchEmotes)
+    std::vector<TwitchEmoteOccurrence> &twitchEmotes)
 {
     auto phrases = getCSettings().ignoredMessages.readOnly();
     auto removeEmotesInRange = [](int pos, int len,
@@ -815,7 +815,7 @@ void TwitchMessageBuilder::runIgnoreReplaces(
                     << "remem nullptr" << (*copy).name.string;
             }
         }
-        std::vector<TwitchEmoteOccurence> v(it, twitchEmotes.end());
+        std::vector<TwitchEmoteOccurrence> v(it, twitchEmotes.end());
         twitchEmotes.erase(it, twitchEmotes.end());
         return v;
     };
@@ -853,7 +853,7 @@ void TwitchMessageBuilder::runIgnoreReplaces(
                         qCDebug(chatterinoTwitch)
                             << "emote null" << emote.first.string;
                     }
-                    twitchEmotes.push_back(TwitchEmoteOccurence{
+                    twitchEmotes.push_back(TwitchEmoteOccurrence{
                         startIndex + pos,
                         startIndex + pos + emote.first.string.length(),
                         emote.second,
@@ -1099,11 +1099,11 @@ std::unordered_map<QString, QString> TwitchMessageBuilder::parseBadgeInfoTag(
     return infoMap;
 }
 
-std::vector<TwitchEmoteOccurence> TwitchMessageBuilder::parseTwitchEmotes(
+std::vector<TwitchEmoteOccurrence> TwitchMessageBuilder::parseTwitchEmotes(
     const QVariantMap &tags, const QString &originalMessage)
 {
     // Twitch emotes
-    std::vector<TwitchEmoteOccurence> twitchEmotes;
+    std::vector<TwitchEmoteOccurrence> twitchEmotes;
 
     auto emotesTag = tags.find("emotes");
 
@@ -1123,8 +1123,8 @@ std::vector<TwitchEmoteOccurence> TwitchMessageBuilder::parseTwitchEmotes(
     }
     for (const QString &emote : emoteString)
     {
-        appendTwitchEmoteOccurences(emote, twitchEmotes, correctPositions,
-                                    originalMessage);
+        appendTwitchEmoteOccurrences(emote, twitchEmotes, correctPositions,
+                                     originalMessage);
     }
 
     return twitchEmotes;
