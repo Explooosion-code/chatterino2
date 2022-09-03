@@ -24,6 +24,7 @@ class Logging;
 class Paths;
 class AccountManager;
 class Emotes;
+class IEmotes;
 class Settings;
 class Fonts;
 class Toasts;
@@ -40,7 +41,7 @@ public:
 
     virtual Theme *getThemes() = 0;
     virtual Fonts *getFonts() = 0;
-    virtual Emotes *getEmotes() = 0;
+    virtual IEmotes *getEmotes() = 0;
     virtual AccountController *getAccounts() = 0;
     virtual HotkeyController *getHotkeys() = 0;
     virtual WindowManager *getWindows() = 0;
@@ -97,10 +98,7 @@ public:
     {
         return this->fonts;
     }
-    Emotes *getEmotes() override
-    {
-        return this->emotes;
-    }
+    IEmotes *getEmotes() override;
     AccountController *getAccounts() override
     {
         return this->accounts;
